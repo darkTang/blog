@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /*
+        实现一个函数，返回一个列表，要求满足：
+          1. 获取100个学生数据，要求：分数超过90，时间在 2021-11-3 之后的。
+          2. 获取的100个学生数据必须要求按分数降序排列。
+          3. 每次请求返回学生数据是一个包含10个学生数据的列表。
+          4. 要求同时保持最大请求数6个。
+          5. 学生数据结构形如：{ id: "1", name: "小军", score: 94, time: "2021-11-3" }
+        补充：可以使用fetch或axios，请求地址为 http://xxx/api/list
+      */
+
+      function request(lists) {
+        if (lists.length >= 100) {
+          lists.splice(100);
+          return lists;
+        }
+        return fetch("http://127.0.0.1:4523/m2/2455194-0-default/84168262")
+          .then((res) => res.json())
+          .then((data) => {
+            data = data.filter((item) => {
+              return (
+                item.score > 90 &&
+                new Date(item.time).getTime() > new Date("1999-11-3").getTime()
+              );
+            });
+            lists.push(...data); // [1,2. 3, 4,...100]
+            return request(lists);
+          });
+      }
+
+      function getLists() {
+        return new Promise((resolve) => {
+          const lists = [];
+          let num = 1;
+          for (let i = 0; i < 6; i++) {
+            request(lists).then((res) => {
+              num++;
+              if (num === 6) {
+                resolve(res);
+              }
+            });
+          }
+        });
+      }
+
+      getLists().then((res) => {
+        res.sort((a, b) => b.score - a.score);
+        console.log(res);
+      });
+    </script>
+  </body>
+</html>
